@@ -28,8 +28,8 @@ case class CompactedResponse(
     * user messages; other items, non-text message parts and user messages without text are dropped.
     */
   def toInput: List[Input] = output.flatMap {
-    case c: OutputItem.Compaction                  => List(c.toInput)
-    case OutputItem.Message(content, _, "user", _) =>
+    case c: OutputItem.Compaction                     => List(c.toInput)
+    case OutputItem.Message(content, _, "user", _, _) =>
       // output content models only assistant parts, so the user's `input_text` parts decode as `Unknown`
       val texts = content.flatMap {
         case OutputContent.Unknown("input_text", raw) => raw.hcursor.get[String]("text").toOption

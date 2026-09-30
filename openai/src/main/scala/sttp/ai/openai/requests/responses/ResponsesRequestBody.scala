@@ -163,7 +163,11 @@ object ResponsesRequestBody {
 
     case class InputMessage(content: List[InputContentItem], role: String, status: Option[String]) extends Message
 
-    case class OutputMessage(content: List[OutputContentItem], id: String, role: String, status: String) extends Message
+    /** @param phase
+      *   The phase of an assistant message, `commentary` or `final_answer`. Resend the value a response returned on its assistant messages.
+      */
+    case class OutputMessage(content: List[OutputContentItem], id: String, role: String, status: String, phase: Option[String] = None)
+        extends Message
 
     object FileSearchCall {
       case class FileSearchResult(

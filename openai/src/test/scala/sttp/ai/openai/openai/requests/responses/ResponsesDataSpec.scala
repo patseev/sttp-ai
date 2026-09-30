@@ -594,4 +594,34 @@ class ResponsesDataSpec extends AnyFlatSpec with Matchers with EitherValues {
       Input.Compaction(encryptedContent = "gAAAAB-compacted", id = Some("cmp_456"))
     )
   }
+
+  "Given responses output message with a phase" should "decode the phase and resend it as input" in {
+    import ResponsesRequestBody.Input.OutputContentItem
+
+    // given
+    val json = parse(
+      """{
+        |  "type": "message",
+        |  "id": "msg_1",
+        |  "role": "assistant",
+        |  "status": "completed",
+        |  "phase": "final_answer",
+        |  "content": [{"type": "output_text", "text": "Done.", "annotations": []}]
+        |}""".stripMargin
+    ).value
+
+    // when
+    val message = json.as[OutputItem].value.asInstanceOf[OutputItem.Message]
+    val resent = (ResponsesRequestBody.Input.OutputMessage(
+      content = List(OutputContentItem.OutputText(annotations = Nil, text = "Done.")),
+      id = message.id,
+      role = message.role,
+      status = message.status,
+      phase = message.phase
+    ): ResponsesRequestBody.Input).asJson.deepDropNullValues
+
+    // then
+    message.phase shouldBe Some("final_answer")
+    resent shouldBe json
+  }
 }
