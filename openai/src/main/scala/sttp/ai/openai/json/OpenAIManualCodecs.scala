@@ -261,6 +261,7 @@ object OpenAIManualCodecs {
   implicit val rrbInputMessageEncoder: Encoder[ResponsesRequestBody.Input.Message] = Encoder.instance {
     case m: ResponsesRequestBody.Input.InputMessage  => m.asJson
     case m: ResponsesRequestBody.Input.OutputMessage => m.asJson
+    case m: ResponsesRequestBody.Input.TextMessage   => m.asJson
   }
 
   implicit val rrbTextOrInputListEncoder: Encoder[Either[String, List[ResponsesRequestBody.Input]]] = Encoder.instance {

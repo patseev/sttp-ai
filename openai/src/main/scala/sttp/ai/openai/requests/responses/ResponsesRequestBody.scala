@@ -169,6 +169,11 @@ object ResponsesRequestBody {
     case class OutputMessage(content: List[OutputContentItem], id: String, role: String, status: String, phase: Option[String] = None)
         extends Message
 
+    /** A message whose content is plain text. Serialized with the `message` type, like [[InputMessage]]. Use it for assistant history:
+      * [[InputMessage]] carries input content items, which OpenAI rejects for the assistant role.
+      */
+    case class TextMessage(content: String, role: String) extends Message
+
     object FileSearchCall {
       case class FileSearchResult(
           attributes: Option[Map[String, String]] = None,
@@ -240,6 +245,16 @@ object ResponsesRequestBody {
         extends Input
 
     case class FunctionCallOutput(callId: String, output: String, id: Option[String] = None, status: Option[String] = None) extends Input
+
+    /** A function call output made of text, image or file content items rather than a string. Serialized with the `function_call_output`
+      * type, like [[FunctionCallOutput]].
+      */
+    case class FunctionCallContentOutput(
+        callId: String,
+        output: List[InputContentItem],
+        id: Option[String] = None,
+        status: Option[String] = None
+    ) extends Input
 
     object Reasoning {
       case class SummaryText(text: String)

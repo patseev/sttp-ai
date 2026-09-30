@@ -564,4 +564,40 @@ class ResponsesDataSpec extends AnyFlatSpec with Matchers with EitherValues {
     message.phase shouldBe Some("final_answer")
     resent shouldBe json
   }
+
+  "Given responses request with a content list function call output" should "serialize it as a function_call_output" in {
+    import ResponsesRequestBody.Input._
+    import ResponsesRequestBody.Input.InputContentItem._
+
+    // given
+    val givenInput: ResponsesRequestBody.Input = FunctionCallContentOutput(
+      callId = "call_1",
+      output = List(InputText("chart"), InputImage(detail = "auto", fileId = None, imageUrl = Some("data:image/png;base64,iVBOR")))
+    )
+
+    // when
+    val serializedJson: io.circe.Json = givenInput.asJson.deepDropNullValues
+
+    // then
+    serializedJson shouldBe parse(
+      """{
+        |  "type": "function_call_output",
+        |  "call_id": "call_1",
+        |  "output": [
+        |    {"type": "input_text", "text": "chart"},
+        |    {"type": "input_image", "detail": "auto", "image_url": "data:image/png;base64,iVBOR"}
+        |  ]
+        |}""".stripMargin
+    ).value
+  }
+
+  "Given responses request with assistant history as text" should "serialize it as a message with string content" in {
+    import ResponsesRequestBody.Input._
+
+    // when
+    val serializedJson: io.circe.Json = (TextMessage(content = "Earlier answer.", role = "assistant"): ResponsesRequestBody.Input).asJson
+
+    // then
+    serializedJson shouldBe parse("""{"type": "message", "role": "assistant", "content": "Earlier answer."}""").value
+  }
 }
