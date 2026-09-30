@@ -360,7 +360,11 @@ object ResponsesResponseBody {
   sealed trait OutputItem
   object OutputItem {
 
-    case class Message(content: List[OutputContent], id: String, role: String, status: String) extends OutputItem
+    /** @param phase
+      *   The phase of an assistant message, `commentary` or `final_answer`. Resend it on the message in follow-up requests.
+      */
+    case class Message(content: List[OutputContent], id: String, role: String, status: String, phase: Option[String] = None)
+        extends OutputItem
 
     case class FileSearchCall(id: String, queries: List[String], status: String, results: Option[List[FileSearchResult]] = None)
         extends OutputItem
