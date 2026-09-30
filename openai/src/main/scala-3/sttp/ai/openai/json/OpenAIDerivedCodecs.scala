@@ -548,12 +548,14 @@ object OpenAIDerivedCodecs {
   implicit val rrCodeOutputEncoder: Encoder[RRB.Input.CodeInterpreterCall.Output] = ConfiguredEncoder.derived
   implicit val rrInputMessageEncoder: Encoder[RRB.Input.InputMessage] = ConfiguredEncoder.derived
   implicit val rrOutputMessageEncoder: Encoder[RRB.Input.OutputMessage] = ConfiguredEncoder.derived
+  implicit val rrTextMessageEncoder: Encoder[RRB.Input.TextMessage] = ConfiguredEncoder.derived
   implicit val rrFileSearchCallEncoder: Encoder[RRB.Input.FileSearchCall] = ConfiguredEncoder.derived
   implicit val rrComputerCallEncoder: Encoder[RRB.Input.ComputerCall] = ConfiguredEncoder.derived
   implicit val rrComputerCallOutputEncoder: Encoder[RRB.Input.ComputerCallOutput] = ConfiguredEncoder.derived
   implicit val rrWebSearchCallEncoder: Encoder[RRB.Input.WebSearchCall] = ConfiguredEncoder.derived
   implicit val rrFunctionCallEncoder: Encoder[RRB.Input.FunctionCall] = ConfiguredEncoder.derived
   implicit val rrFunctionCallOutputEncoder: Encoder[RRB.Input.FunctionCallOutput] = ConfiguredEncoder.derived
+  implicit val rrFunctionCallContentOutputEncoder: Encoder[RRB.Input.FunctionCallContentOutput] = ConfiguredEncoder.derived
   implicit val rrReasoningEncoder: Encoder[RRB.Input.Reasoning] = ConfiguredEncoder.derived
   implicit val rrImageGenerationCallEncoder: Encoder[RRB.Input.ImageGenerationCall] = ConfiguredEncoder.derived
   implicit val rrCodeInterpreterCallEncoder: Encoder[RRB.Input.CodeInterpreterCall] = ConfiguredEncoder.derived
@@ -566,14 +568,16 @@ object OpenAIDerivedCodecs {
   implicit val rrItemReferenceEncoder: Encoder[RRB.Input.ItemReference] = ConfiguredEncoder.derived
   implicit val rrCompactionEncoder: Encoder[RRB.Input.Compaction] = ConfiguredEncoder.derived
   implicit val rrCompactionTriggerEncoder: Encoder[RRB.Input.CompactionTrigger] = ConfiguredEncoder.derived
-  // `InputMessage`/`OutputMessage` both serialize under the shared OpenAI `"type":"message"` discriminator (the configured derivation would
-  // otherwise emit the snake_case constructor names `input_message` / `output_message`).
+  // `InputMessage`/`OutputMessage`/`TextMessage` all serialize under the shared OpenAI `"type":"message"` discriminator, and
+  // `FunctionCallContentOutput` under `"function_call_output"` (the configured derivation would otherwise emit their snake_case
+  // constructor names).
   implicit val rrbInputEncoder: Encoder[RRB.Input] = ConfiguredEncoder
     .derived[RRB.Input]
     .mapJson(_.mapObject { o =>
       o("type").flatMap(_.asString) match {
-        case Some("input_message") | Some("output_message") => o.add("type", Json.fromString("message"))
-        case _                                              => o
+        case Some("input_message") | Some("output_message") | Some("text_message") => o.add("type", Json.fromString("message"))
+        case Some("function_call_content_output")                                  => o.add("type", Json.fromString("function_call_output"))
+        case _                                                                     => o
       }
     })
   // rrFormatEncoder: Encoder[RRB.Format] -- hand-written in OpenAIManualCodecs (responsesRequestFormatEncoder) so the `json_schema` case
